@@ -1,14 +1,18 @@
 ---
 title: GCRN代码解读
 date: 2017-12-21 11:05:23
+categories: Deep Learning
 tags:
-- paper
-- gcn
+- Paper Reading
+- GCN
+- GCRN
+- DL&ML
+- Code
 ---
 
-* 论文及源代码：[点击这里](https://github.com/youngjoo-epfl/gconvRNN)
+## Intro
 
-由于涉及比较多的公式，而github不支持MathJax或者LaTeX，所以如果想获得更好的阅读体验请安装chrome插件[GitHub with MathJax](https://chrome.google.com/webstore/detail/github-with-mathjax/ioemnmodlmafdkllaclgeombjnmnbima)，或者有更好的方法恳请告知。
+* 论文及源代码：[点击这里](https://github.com/youngjoo-epfl/gconvRNN)
 
 若发现存在错误，欢迎指正。
 
@@ -39,7 +43,7 @@ gconvRNN
 * 开始训练
 * 代码附录
 
-### 数据预处理：
+## 数据预处理：
 
 *train\valid\test 数据集的格式都是一样的：*
 
@@ -66,22 +70,22 @@ p i e r r e _ < u n k > _ N _ y e a r s _ o l d _ w i l l _ j o i n _ t h e _ b 
 
 **2. 构造邻接矩阵**
 
-![](./images/adj.png)
+![](/images/adj.png)
 
 得到邻接矩阵的值：
 
-![](./images/adj_value.png)
+![](/images/adj_value.png)
 
 
-### GCRN实现思路：
+## GCRN实现思路：
 
 GCRN = GCN + RNN。
 
 *公式*：
 
-![](./images/gconv.png)
+![](/images/gconv.png)
 
-![](./images/lstm_func.png)
+![](/images/lstm_func.png)
 
 
 **但是** 代码中的实现方式稍有不同
@@ -98,13 +102,13 @@ $$T_k(x) = 2LT_{k-1}(x)-T_{k-2}(x)$$
 
 **LSTM** ：
 
-![](./images/gcn_lstm.png)
+![](/images/gcn_lstm.png)
 
-### 开始训练
+## 开始训练
 
 数据预处理 -> model定义 -> train
 
-![](./images/dataflow.png)
+![](/images/dataflow.png)
 
 输出`ouput`的shape为(batch_size, num_node, num_unit) —— (20, 50, 50)。由于设置了有50个LSTM units，所以这里需要使所有units的输出做线性变换，使其变为一个值：
 
@@ -112,7 +116,7 @@ $$T_k(x) = 2LT_{k-1}(x)-T_{k-2}(x)$$
 
 那么，所有时刻的输出的shape为(50, 20, 50, 1)
 
-### 代码
+## 代码
 
 **GCN实现方法**
 
@@ -271,7 +275,7 @@ def __call__(self, inputs, state, scope=None):
 ```
 
 
-##### 其他变量
+### 其他变量
 
 | 变量 | shape | meaning |
 | ------- | ---------------- | ------------------------------------------------ |
@@ -286,11 +290,11 @@ def __call__(self, inputs, state, scope=None):
 | output | (20, 50, 50) | outputs的单个时刻输出(batch_size, num_node, num_unit) |
 
 
-### Laplacian matrix
+## Laplacian matrix
 
 
 
-![](./images/laplacian_example.png)
+![](/images/laplacian_example.png)
 
 **Properties**
 
@@ -305,7 +309,11 @@ def __call__(self, inputs, state, scope=None):
 * 拉普拉斯矩阵是奇异的
 
 
-### 问题
+## 问题
 
 1. 代码实现里面的公式跟论文是否真的不一样
 2. x2 = 2 * tf.sparse_tensor_dense_matmul(L, x1) - x0 起到一个什么作用
+
+## 后记
+
+补充一下，后来跟实验室的小伙伴谈论过后对GCN有了比较深刻的认识。上面问题中的第二点，其实跟GCN的K的大小有关。K=1，表示包含了该节点一条的信息。至于为什么会这样，这是因为在计算过程中与由adj mnatrix得来的Laplacian相乘，每乘一次，就会多包含一跳的节点信息。
